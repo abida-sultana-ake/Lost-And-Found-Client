@@ -1,25 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { AuthContext } from "../context/AuthContext";
 
 const Signup = () => {
+  const { createUser, googleSignIn } = useContext(AuthContext);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    console.log("Signup submitted", { name, email, password });
-    // Add your signup logic here
+    try {
+      await createUser(email, password);
+      navigate("/"); 
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
   };
 
-  const handleGoogleSignup = () => {
-    console.log("Google signup clicked");
-    // Add Google signup logic here
+  const handleGoogleSignup = async () => {
+    try {
+      await googleSignIn();
+      navigate("/"); 
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
   };
 
   return (
-    <div className="min-h-screen mt-15 flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-6">
       <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border border-blue-100">
         <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">
           Create Account
@@ -77,14 +90,12 @@ const Signup = () => {
           </button>
         </form>
 
-        {/* OR Divider */}
         <div className="flex items-center my-6">
           <hr className="flex-grow border-gray-300" />
           <span className="mx-2 text-gray-400 font-medium">OR</span>
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        {/* Google Signup */}
         <button
           onClick={handleGoogleSignup}
           className="w-full flex items-center justify-center border border-gray-300 rounded-lg py-2 hover:shadow-md transition bg-white"
@@ -93,7 +104,6 @@ const Signup = () => {
           <span className="font-medium text-gray-700">Sign up with Google</span>
         </button>
 
-        {/* Login Link */}
         <p className="text-center text-gray-600 text-sm mt-6">
           Already have an account?{" "}
           <Link

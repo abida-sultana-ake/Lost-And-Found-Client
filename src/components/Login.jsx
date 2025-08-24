@@ -1,31 +1,43 @@
-import React, { useState } from "react";
-import { FcGoogle } from "react-icons/fc"; 
-import { Link } from "react-router"; 
+import React, { useState, useContext } from "react";
+import { FcGoogle } from "react-icons/fc";
+import { Link, useNavigate } from "react-router";
+import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
+  const { signInUser, googleSignIn } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login submitted", { email, password });
-    // Add your authentication logic here
+    try {
+      await signInUser(email, password);
+      navigate("/"); 
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    console.log("Google login clicked");
-    // Add your Google authentication logic here
+  const handleGoogleLogin = async () => {
+    try {
+      await googleSignIn();
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
   };
 
   return (
-    <div className="min-h-screen mt-15 flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white px-6">
       <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border border-blue-100">
         <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">
           Welcome Back
         </h1>
         <p className="text-center text-gray-500 mb-8">Sign in to continue</p>
 
-        {/* Email & Password Form */}
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="block text-gray-700 font-medium mb-1">
@@ -69,14 +81,12 @@ const Login = () => {
           </button>
         </form>
 
-        {/* OR Divider */}
         <div className="flex items-center my-6">
           <hr className="flex-grow border-gray-300" />
           <span className="mx-2 text-gray-400 font-medium">OR</span>
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        {/* Google Login Button */}
         <button
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center border border-gray-300 rounded-lg py-2 hover:shadow-md transition bg-white"
@@ -85,7 +95,6 @@ const Login = () => {
           <span className="font-medium text-gray-700">Sign in with Google</span>
         </button>
 
-        {/* Signup Link */}
         <p className="text-center text-gray-600 text-sm mt-6">
           Don't have an account?{" "}
           <Link

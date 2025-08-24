@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { NavLink } from "react-router";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logOut } = useContext(AuthContext);
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const linkClasses = ({ isActive }) =>
@@ -29,27 +31,44 @@ const Navbar = () => {
           <NavLink to="/lost" className={linkClasses}>
             Lost
           </NavLink>
-          <NavLink to="/report-lost" className={linkClasses}>
-            Report Lost
-          </NavLink>
-          <NavLink to="/report-lost-list" className={linkClasses}>
-            Report Lost All List
-          </NavLink>
           <NavLink to="/found" className={linkClasses}>
             Found
           </NavLink>
-          <NavLink to="/report-found" className={linkClasses}>
-            Report Found
-          </NavLink>
-          <NavLink to="/report-found-list" className={linkClasses}>
-            Report Found All List
-          </NavLink>
-          <NavLink
-            to="/login"
-            className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition font-medium shadow-md"
-          >
-            Login
-          </NavLink>
+
+          {/* Only show these if user is logged in */}
+          {user && (
+            <>
+              <NavLink to="/report-lost" className={linkClasses}>
+                Report Lost
+              </NavLink>
+              <NavLink to="/report-lost-list" className={linkClasses}>
+                Report Lost List
+              </NavLink>
+              <NavLink to="/report-found" className={linkClasses}>
+                Report Found
+              </NavLink>
+              <NavLink to="/report-found-list" className={linkClasses}>
+                Report Found List
+              </NavLink>
+            </>
+          )}
+
+          {/* Conditional Login/Logout */}
+          {user ? (
+            <button
+              onClick={logOut}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium shadow-md"
+            >
+              Logout
+            </button>
+          ) : (
+            <NavLink
+              to="/login"
+              className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition font-medium shadow-md"
+            >
+              Login
+            </NavLink>
+          )}
         </div>
 
         {/* Hamburger Button */}
@@ -79,36 +98,74 @@ const Navbar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink
-              onClick={toggleMenu}
-              to="/report-lost"
-              className={linkClasses}
-            >
-              Report Lost
-            </NavLink>
-          </li>
-          <li>
             <NavLink onClick={toggleMenu} to="/found" className={linkClasses}>
               Found
             </NavLink>
           </li>
+
+          {/* Only show these if user is logged in */}
+          {user && (
+            <>
+              <li>
+                <NavLink
+                  onClick={toggleMenu}
+                  to="/report-lost"
+                  className={linkClasses}
+                >
+                  Report Lost
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  onClick={toggleMenu}
+                  to="/report-lost-list"
+                  className={linkClasses}
+                >
+                  Report Lost List
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  onClick={toggleMenu}
+                  to="/report-found"
+                  className={linkClasses}
+                >
+                  Report Found
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  onClick={toggleMenu}
+                  to="/report-found-list"
+                  className={linkClasses}
+                >
+                  Report Found List
+                </NavLink>
+              </li>
+            </>
+          )}
+
+          {/* Conditional Mobile Login/Logout */}
           <li>
-            <NavLink
-              onClick={toggleMenu}
-              to="/report-found"
-              className={linkClasses}
-            >
-              Report Found
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              onClick={toggleMenu}
-              to="/login"
-              className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition font-medium text-center shadow-md block"
-            >
-              Login
-            </NavLink>
+            {user ? (
+              <button
+                onClick={() => {
+                  logOut();
+                  toggleMenu();
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition font-medium text-center shadow-md w-full"
+              >
+                Logout
+              </button>
+            ) : (
+              <NavLink
+                onClick={toggleMenu}
+                to="/login"
+                className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition font-medium text-center shadow-md block"
+              >
+                Login
+              </NavLink>
+            )}
           </li>
         </ul>
       </div>

@@ -1,57 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-// Sample data
-const lostItems = [
-  {
-    name: "Black Wallet",
-    description: "Lost near Central Park, contains ID and cards.",
-    image: "https://via.placeholder.com/300x200?text=Wallet",
-    date: "2025-08-20",
-    category: "Accessories",
-    location: "Central Park",
-  },
-  {
-    name: "Blue Backpack",
-    description: "Lost at metro station. Has laptop and notebooks inside.",
-    image: "https://via.placeholder.com/300x200?text=Backpack",
-    date: "2025-08-18",
-    category: "Bags",
-    location: "Metro Station",
-  },
-  {
-    name: "iPhone 14 Pro",
-    description: "Lost in coffee shop around 5 PM.",
-    image: "https://via.placeholder.com/300x200?text=Phone",
-    date: "2025-08-15",
-    category: "Electronics",
-    location: "Coffee Shop",
-  },
-  {
-    name: "Gold Ring",
-    description: "Lost at the wedding hall near downtown.",
-    image: "https://via.placeholder.com/300x200?text=Ring",
-    date: "2025-08-12",
-    category: "Jewelry",
-    location: "Wedding Hall",
-  },
-  {
-    name: "Passport",
-    description: "Lost near airport security gate.",
-    image: "https://via.placeholder.com/300x200?text=Passport",
-    date: "2025-08-10",
-    category: "Documents",
-    location: "Airport",
-  },
-  {
-    name: "Silver Bracelet",
-    category: "Jewelry",
-    description: "Lost at the downtown mall, engraved with initials M.L.",
-    image: "https://via.placeholder.com/300x200?text=Bracelet",
-    date: "2025-08-21",
-    location: "Airport",
-  },
-];
+import axios from "axios";
 
 const categories = [
   "All",
@@ -63,24 +12,47 @@ const categories = [
 ];
 
 const Lost = () => {
+  const [lostItems, setLostItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const serverURL = "http://127.0.0.1:3000";
+
+  useEffect(() => {
+    const fetchLostItems = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`${serverURL}/lost`);
+        setLostItems(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError("Failed to load lost items.");
+        setLoading(false);
+      }
+    };
+    fetchLostItems();
+  }, []);
 
   const filteredItems = lostItems.filter((item) => {
     const matchesCategory =
       filterCategory === "All" || item.category === filterCategory;
     const matchesSearch =
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.location || "").toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (error) return <p className="text-center mt-10 text-red-600">{error}</p>;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      {/* Header */}
+    <div className="max-w-7xl mt-15 mx-auto px-4 py-10">
       <motion.h1
-        className="text-3xl font-bold text-gray-800 mb-6 text-center"
+        className="text-3xl text-blue-600 font-bold mb-6 text-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -88,7 +60,6 @@ const Lost = () => {
         Lost Items
       </motion.h1>
 
-      {/* Search and Filter */}
       <motion.div
         className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8"
         initial={{ opacity: 0, y: -10 }}
@@ -102,7 +73,6 @@ const Lost = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-
         <select
           className="border border-gray-200 rounded-xl px-4 py-2 w-full md:w-1/4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           value={filterCategory}
@@ -114,21 +84,18 @@ const Lost = () => {
         </select>
       </motion.div>
 
-      {/* Cards */}
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         initial="hidden"
         animate="visible"
         variants={{
           hidden: {},
-          visible: {
-            transition: { staggerChildren: 0.15 },
-          },
+          visible: { transition: { staggerChildren: 0.15 } },
         }}
       >
         {filteredItems.map((item, index) => (
           <motion.div
-            key={index}
+            key={item._id || index}
             className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer"
             variants={{
               hidden: { opacity: 0, y: 20 },
@@ -137,16 +104,20 @@ const Lost = () => {
             whileHover={{ scale: 1.02 }}
           >
             <img
-              src={item.image}
-              alt={item.name}
+              src={item.image || "https://via.placeholder.com/400x300"}
+              alt={item.name || "Lost Item"}
               className="w-full h-48 object-cover"
             />
             <div className="p-4">
               <h2 className="text-lg font-semibold text-gray-800">
-                {item.name}
+                {item.name || "Unnamed"}
               </h2>
-              <p className="text-gray-600 text-sm mt-1">{item.location}</p>
-              <p className="text-gray-500 text-xs mt-1">{item.date}</p>
+              <p className="text-gray-600 text-sm mt-1">
+                {item.location || "Unknown"}
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                {item.date || "Unknown"}
+              </p>
               <button
                 onClick={() => setSelectedItem(item)}
                 className="mt-4 w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-2 rounded-lg hover:opacity-90 transition-opacity"
@@ -158,7 +129,6 @@ const Lost = () => {
         ))}
       </motion.div>
 
-      {/* Modal with AnimatePresence */}
       <AnimatePresence>
         {selectedItem && (
           <motion.div
@@ -170,8 +140,7 @@ const Lost = () => {
             <div
               className="absolute inset-0 backdrop-blur-sm bg-black/30"
               onClick={() => setSelectedItem(null)}
-            ></div>
-
+            />
             <motion.div
               className="relative bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full z-10"
               initial={{ scale: 0.9, opacity: 0, y: 30 }}
@@ -186,8 +155,10 @@ const Lost = () => {
                 &times;
               </button>
               <img
-                src={selectedItem.image}
-                alt={selectedItem.name}
+                src={
+                  selectedItem.image || "https://via.placeholder.com/400x300"
+                }
+                alt={selectedItem.name || "Lost Item"}
                 className="w-full h-56 object-cover rounded-lg"
               />
               <h2 className="text-2xl font-bold text-gray-800 mt-4">
@@ -203,6 +174,26 @@ const Lost = () => {
               <p className="text-gray-500 text-sm mt-1">
                 Category: {selectedItem.category}
               </p>
+              {selectedItem.contact && (
+                <div className="mt-5 bg-gray-100 p-3 rounded-lg text-center">
+                  <p className="text-gray-800 font-medium">
+                    Contact Email:{" "}
+                    <span className="text-blue-600">
+                      {selectedItem.contact.replace("mailto:", "")}
+                    </span>
+                  </p>
+                  <button
+                    onClick={() =>
+                      navigator.clipboard.writeText(
+                        selectedItem.contact.replace("mailto:", "")
+                      )
+                    }
+                    className="mt-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition shadow-md"
+                  >
+                    Copy Email
+                  </button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
